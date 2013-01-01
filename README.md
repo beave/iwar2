@@ -11,5 +11,5 @@ iWar2 - based of the iWar war dialer http://quadrantsec.com/iwar/.  This version
 a multi-threaded version that'll work better with VoIP.  iWar2 also intends to be more modular.
 
 <b>
-This code is not complete and is actively being added/changed!
+This code is not complete and is actively being added to and modified!
 </b>
