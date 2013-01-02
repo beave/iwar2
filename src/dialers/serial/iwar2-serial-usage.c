@@ -29,10 +29,15 @@
 #include <stdio.h>
 #include <string.h>
 #include <fcntl.h>
+#include <version.h>
 #include "sysdep.h"
 
 void iWar_Serial_Usage() { 
 
-printf("Help goes here\n");
+fprintf(stderr, "iwar2-serial version %s\n", VERSION);
+fprintf(stderr, "--------------------------------------------------------------------------\n\n"); 
+fprintf(stderr, " --help\t\tThis help screen\n");
+
+
 
 }

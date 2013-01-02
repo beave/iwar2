@@ -37,9 +37,13 @@
 
 int main(int argc, char **argv) {
 
+/* See old iwar for more flags Beave */
+
 const struct option long_options[] = {
         { "help",         no_argument,          NULL,   'h' },
         { "port",         required_argument,    NULL,   'p' },
+	{ "parity",	  required_argument,  	NULL,  	'P' }, 
+	{ "databit",	  required_argument, 	NULL,   'd' },
 	{ "speed",	  required_argument, 	NULL, 	's' }, 
         { "config",       required_argument,    NULL,   'c' },
         { "fifo",         required_argument,    NULL,   'f' },
@@ -47,7 +51,7 @@ const struct option long_options[] = {
         {0, 0, 0, 0}
 };
 
-static const char *short_options = "p:s:c:f:d:h";
+static const char *short_options = "d:P:p:s:c:f:d:h";
 int option_index = 0;
 
 char c; 
@@ -66,6 +70,10 @@ while ((c = getopt_long(argc, argv, short_options, long_options, &option_index))
            iWar_Serial_Usage();
            exit(0);
            break;
+
+	   case 'p':
+	   snprintf(serialconfig->port, sizeof(serialconfig->port), "%s", iWar_Remove_Return(optarg)); 
+	   break; 
 
 /*
            case 'm':
@@ -105,5 +113,5 @@ m_savestate(portfd);    /* Save current state & setup the port */
 //m_hupcl(portfd, 1);
 //m_flush(portfd);        /* Flush any old data out before we start */
 
-
+//printf("-> %s\n", serialconfig->port);
 }
