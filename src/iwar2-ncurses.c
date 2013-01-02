@@ -37,6 +37,7 @@
 #include "iwar2.h"
 
 struct _iWarCounters *counters;
+struct _iWarConfig *config;
 
 void iWar_Initscreen() { 
 
@@ -54,12 +55,9 @@ getmaxyx(stdscr, counters->max_row, counters->max_col);
 void iWar_Testscreen()
 {
 
- int maxrow;
- int maxcol;
+ getmaxyx(stdscr,counters->max_row, counters->max_col); /* Current screen attributes */
 
- getmaxyx(stdscr,maxrow,maxcol); /* Current screen attributes */
-
- if (maxrow < 24 || maxcol < 80)
+ if (counters->max_row < 24 || counters->max_col < 80)
     {
     endwin();
     fprintf(stderr, "This program requires a screen size of 80x24\n");
@@ -239,6 +237,25 @@ wrefresh(info);
 sleep(seconds);
 delwin(info);
 touchwin(stdscr);
+refresh();
+}
+
+void iWar_Update_Status (const char *nstring,... ) {
+
+char buf[256];
+
+va_list ap;
+va_start(ap, nstring);
+
+vsnprintf(buf, sizeof(buf), nstring, ap);
+
+init_pair(1, COLOR_WHITE, COLOR_BLUE);
+attron(COLOR_PAIR(1));
+move(5,20);
+printw("                                     ");
+move(5,20);
+printw("%s", buf);
+attroff(COLOR_PAIR(1));
 refresh();
 }
 

@@ -5,6 +5,7 @@
 #endif
 
 #include <stdint.h>
+#include "iwar2-defs.h"
 
 typedef char sbool;     /* From rsyslog. 'bool' causes compatiablity problems on OSX. "(small bool) I intentionally use char, to keep it slim so that many fit into the CPU cache!".  */
 
@@ -22,7 +23,8 @@ struct _iWarConfig {
     sbool	 daemonize; 
     sbool	 serial_flag;
 
-    char	 iwar_config_file[255]; 
+    char	 iwar_config_file[MAX_PATH]; 
+    char	 iwar_fifo[MAX_PATH];
 
     char	 iwar_predial[128];
     char	 iwar_mask[30];
@@ -67,4 +69,5 @@ void  iWar_Load_Config( void );
 char *iWar_Between_Quotes(char *);
 char *iWar_Replace_Str(char *, char *, char *);
 char *iWar_Var_To_Value(char *);
-void iWar_Mother_Forker ( void ); 
+void  iWar_Mother_Forker ( void ); 
+void  iWar_Update_Status (const char *,... );
