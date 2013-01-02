@@ -194,14 +194,14 @@ for (i=1; i<14; i++)
 strncpy(msg, "Intelligent War Dialer 2 [iWar2]", sizeof(msg)); mvwprintw(info, 1, (50-strlen(msg)) / 2, "%s", msg);
 strncpy(msg, "https://quadrantsec.com/iwar2", sizeof(msg));  mvwprintw(info, 2, (50-strlen(msg)) / 2, "%s", msg);
 snprintf(msg, sizeof(msg), "Version: %s", VERSION); mvwprintw(info, 3, (50-strlen(msg)) / 2, "%s", msg);
-//strncpy(msg, "\"Now with 101% more VoIP!\"", sizeof(msg)); mvwprintw(info, 4, (50-strlen(msg)) / 2, "%s", msg);
+strncpy(msg, "\"Dial Hard 2 - Dial Harder\"", sizeof(msg)); mvwprintw(info, 4, (50-strlen(msg)) / 2, "%s", msg);
 wattrset(info, COLOR_PAIR(6));
 strncpy(msg, "Written By Da Beave", sizeof(msg)); mvwprintw(info, 6, (50-strlen(msg)) / 2, "%s", msg);
 wattrset(info, COLOR_PAIR(5));
-strncpy(msg, "Released Jan. XXth XXXX", sizeof(msg)); mvwprintw(info, 8, (50-strlen(msg)) / 2, "%s", msg);
+strncpy(msg, "Released XXX. XXth 2013", sizeof(msg)); mvwprintw(info, 8, (50-strlen(msg)) / 2, "%s", msg);
 strncpy(msg, "Contact Information:", sizeof(msg)); mvwprintw(info, 10, (50-strlen(msg)) / 2, "%s", msg);
 strncpy(msg, "Email: cclark@quadrantsec.com", sizeof(msg)); mvwprintw(info, 11, (50-strlen(msg)) / 2, "%s", msg);
-strncpy(msg, "IRC: irc.freenode.net #iwar", sizeof(msg)); mvwprintw(info, 12, (50-strlen(msg)) / 2, "%s", msg);
+strncpy(msg, "IRC: irc.2600.net #telephreak", sizeof(msg)); mvwprintw(info, 12, (50-strlen(msg)) / 2, "%s", msg);
 
 wrefresh(info);
 sleep(3);
