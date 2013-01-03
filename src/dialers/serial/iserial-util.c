@@ -26,15 +26,19 @@
 #include "config.h"
 #endif
 
+#include <stdio.h>
+#include <string.h>
 #include "sysdep.h"
-/*
-void sendmodem(const char *sendstring)
-{
+#include "iwar2.h"
+#include "iwar2-serial.h"
+
+void iWar_Send_Modem(int portfd, const char *sendstring) {
 
 char *dest=NULL;
 char dialstring[128];
 int len;
-*/
+int rc=0;
+
 /* modemqueue is used for things like volume changes,  speaker off, etc */
 
    /* No commands should start with 13 (return). If the sendstring is
@@ -43,13 +47,12 @@ int len;
       hang up the line you send 13.   If thats the case,  we send the
       13 _first_ then send whatever is in the modemqueue.  */
 
-/*
+
    len=sendstring[0];
-   if (len == 13 )
-   {
-   write(portfd, "\r", 1);
+   if (len == 13 ) {
+   rc = write(portfd, "\r", 1);
    sleep(1);                  /* Let the modem return NO CARRIER */
- //  }
+   }
 
 /*
    if (strcmp(modemqueue, ""))
@@ -59,11 +62,11 @@ int len;
       strncpy(modemqueue, "", sizeof(modemqueue));      /* Command was sent,
                                                            clear the queue */
 //      sleep(1);
- //     }
+//     }
 
    /* If it's not just a return,  do whatever you where originally
       instructed to do .... */
   
-  // if (len != 13)  write(portfd, sendstring, strlen(sendstring));
-//}
+   if (len != 13)  rc = write(portfd, sendstring, strlen(sendstring));
+}
 

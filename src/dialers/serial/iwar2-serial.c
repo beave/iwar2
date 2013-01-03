@@ -22,12 +22,16 @@
  *
  */
 
+
+/* hwhandshake / swhandshake opts */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 #include <fcntl.h>
 #include <getopt.h>
 
@@ -43,8 +47,8 @@ const struct option long_options[] = {
         { "help",         no_argument,          NULL,   'h' },
         { "port",         required_argument,    NULL,   'p' },
 	{ "parity",	  required_argument,  	NULL,  	'P' }, 
-	{ "databit",	  required_argument, 	NULL,   'd' },
-	{ "speed",	  required_argument, 	NULL, 	's' }, 
+	{ "databits",	  required_argument, 	NULL,   'D' },
+	{ "baud",	  required_argument, 	NULL, 	'b' }, 
         { "config",       required_argument,    NULL,   'c' },
         { "fifo",         required_argument,    NULL,   'f' },
 	{ "dial", 	  required_argument, 	NULL, 	'd' },
@@ -55,10 +59,37 @@ static const char *short_options = "d:P:p:s:c:f:d:h";
 int option_index = 0;
 
 char c; 
+char ch;
+char buf[2] = { 0 };
+char tmpbuf[2] = { 0 }; 
+char tmpdial[64] = { 0 }; 
+char modem_in[1024] = { 0 };  
+
+int rc=0;
+int i=0;
+int timer=0;
+int modem_timer=0;
+
+fd_set fds;
+struct timeval tv;
 
 struct _iWarSerialConfig *serialconfig;
 serialconfig = malloc(sizeof(_iWarSerialConfig));
 memset(serialconfig, 0, sizeof(_iWarSerialConfig));
+
+/* Defaults */
+
+snprintf(serialconfig->port, sizeof(serialconfig->port), "%s", DEFAULT_PORT);
+snprintf(serialconfig->parity, sizeof(serialconfig->parity), "%s", DEFAULT_PARITY);
+snprintf(serialconfig->baud, sizeof(serialconfig->baud), "%s", DEFAULT_BAUD); 
+snprintf(serialconfig->config, sizeof(serialconfig->config), "%s", DEFAULT_CONFIG);
+snprintf(serialconfig->fifo, sizeof(serialconfig->fifo), "%s", DEFAULT_FIFO);
+
+serialconfig->swhandshake=0;
+serialconfig->hwhandshake=1;
+serialconfig->portfd=0;
+serialconfig->modem_timeout = DEFAULT_TIMEOUT;
+
 
 while ((c = getopt_long(argc, argv, short_options, long_options, &option_index)) != -1) {
 
@@ -75,43 +106,105 @@ while ((c = getopt_long(argc, argv, short_options, long_options, &option_index))
 	   snprintf(serialconfig->port, sizeof(serialconfig->port), "%s", iWar_Remove_Return(optarg)); 
 	   break; 
 
-/*
-           case 'm':
-           snprintf(config->iwar_mask, sizeof(config->iwar_mask), "%s", iWar_Remove_Return(optarg));
-           config->iwar_start = atol(iWar_Mask_Replace(optarg, "0"));
-           config->iwar_end   = atol(iWar_Mask_Replace(optarg, "9"));
+	   case 'P':
+	   snprintf(serialconfig->parity, sizeof(serialconfig->parity), "%s", iWar_Remove_Return(optarg));
+	   if (strcmp(serialconfig->parity, "N") && strcmp(serialconfig->parity, "E") && strcmp(serialconfig->parity, "O")) iWar_Log(1, "Invalid parity!");
+	   break;
+
+           case 'D':
+
+           /*  Databits - Valid are 5,6,7,8 */
+
+           snprintf(serialconfig->databits, sizeof(serialconfig->databits), "%s", iWar_Remove_Return(optarg));
+
+           if (strcmp(serialconfig->parity, "5") && 
+               strcmp(serialconfig->parity, "6") && 
+               strcmp(serialconfig->parity, "7") && 
+               strcmp(serialconfig->parity, "8"))  iWar_Log(1, "Invalid databits!");
            break;
 
-           case 'p':
-           snprintf(config->iwar_predial, sizeof(config->iwar_predial), "%s", iWar_Remove_Return(optarg));
+	   case 'b':
+
+	   snprintf(serialconfig->baud, sizeof(serialconfig->baud), "%s", iWar_Remove_Return(optarg));
+
+           if (strcmp(serialconfig->baud, "110")   && strcmp(serialconfig->baud,"300")     &&
+               strcmp(serialconfig->baud, "1200")  && strcmp(serialconfig->baud,"2400")    &&
+               strcmp(serialconfig->baud, "4800")  && strcmp(serialconfig->baud,"9600")    &&
+               strcmp(serialconfig->baud, "19200") && strcmp(serialconfig->baud,"38400")   &&
+               strcmp(serialconfig->baud, "57600") && strcmp(serialconfig->baud,"115200")  && 
+ 	       strcmp(serialconfig->baud, "230400")) 
+	       iWar_Log(1, "Invalid speed!");
+	   break;
+
+	   case 'c':
+
+	   snprintf(serialconfig->config, sizeof(serialconfig->config), "%s", iWar_Remove_Return(optarg));
+	   break; 
+	
+	   case 'f': 
+
+           snprintf(serialconfig->fifo, sizeof(serialconfig->fifo), "%s", iWar_Remove_Return(optarg));
            break;
-*/
-            }
+
+	   case 'd':
+
+	   snprintf(serialconfig->dial, sizeof(serialconfig->dial), "%s", iWar_Remove_Return(optarg));
+	   break;
+
+           }
 }
 
+if (!strcmp(serialconfig->dial, "")) iWar_Log(1, "No number to dial was specifed");
+
+serialconfig->portfd = open(serialconfig->port, O_RDWR); 
+if (serialconfig->portfd == -1) iWar_Log(1, "Can't open %s", serialconfig->port);
+
+m_savestate(serialconfig->portfd);
+m_setparms(serialconfig->portfd,serialconfig->baud,serialconfig->parity,serialconfig->databits,serialconfig->hwhandshake,serialconfig->swhandshake);
+m_nohang(serialconfig->portfd);       /* Do we need to do this? */
+m_hupcl(serialconfig->portfd, 1);
+m_flush(serialconfig->portfd);        /* Flush any old data out before we start */
+
+snprintf(tmpdial, sizeof(tmpdial), "ATDT%s\r", serialconfig->dial);
+iWar_Send_Modem(serialconfig->portfd, tmpdial);
+
+while( modem_timer < serialconfig->modem_timeout ) { 
+
+	
+        tv.tv_sec=1;                    /* 1 second */
+        tv.tv_usec=0;
+        FD_ZERO(&fds);
+        FD_SET(serialconfig->portfd, &fds);
+	
+	if (select(serialconfig->portfd+1, &fds, NULL, NULL, &tv)) { 
+           rc = read(serialconfig->portfd, buf, 1);
+	   if ( rc == -1 ) iWar_Log(1, "Error read() from port!");
+	   snprintf(tmpbuf, sizeof(tmpbuf), "%c", buf[0]);
+	   strlcat(modem_in, tmpbuf, sizeof(modem_in));
+	   
+	   if ( (int)buf[0] == 13 || (int)buf[0] == 10 ) strlcpy(modem_in, "", sizeof(modem_in));
+
+	   if (strstr(modem_in, "NO DIALTONE") || strstr(modem_in, "NO DIAL TONE")) { 
+	      iWar_Send_FIFO(serialconfig->fifo, "NOID:NONUMBER:NO DIALTONE\n");
+	      m_restorestate(serialconfig->portfd);        /* Restore state from "savestate" */
+	      close(serialconfig->portfd);                 /* Close serial/output file */
+	      exit(0);
+	      }
+
+	   if (strstr(modem_in, "NO CARRIER")) printf("NO CARRIER\n");
+
+	   modem_timer=0;
+	}
 
 
-/*
-int portfd = 0; 
-char tty[20]            = "/dev/ttyS0";
-char baudrate[7]        = "1200";
-char parity[2]          = "N";
-char bits[2]            = "8";
-int hwhandshake=1;
-int swhandshake=0;
+modem_timer++;
+printf("timer: %d\n", modem_timer);
+}
 
-portfd = open(tty, O_RDWR);
-if  (portfd == -1)
-                {
-                fprintf(stderr, "ERROR: Can't open %s.\n", tty);
-                exit(1);
-                }
+m_restorestate(serialconfig->portfd);        /* Restore state from "savestate" */
+close(serialconfig->portfd);                 /* Close serial/output file */
+printf("Closing\n");
+exit(0);
 
-m_savestate(portfd);    /* Save current state & setup the port */
-//m_setparms(portfd,baudrate,parity,bits,hwhandshake,swhandshake);
-//m_nohang(portfd);       /* Do we need to do this? */
-//m_hupcl(portfd, 1);
-//m_flush(portfd);        /* Flush any old data out before we start */
-
-//printf("-> %s\n", serialconfig->port);
+//printf("BOOM\n");
 }

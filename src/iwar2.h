@@ -80,3 +80,4 @@ char *iWar_Replace_Str(char *, char *, char *);
 char *iWar_Var_To_Value(char *);
 void  iWar_Mother_Forker ( void ); 
 void  iWar_Update_Status (const char *,... );
+void  iWar_Send_FIFO(char *, char *);

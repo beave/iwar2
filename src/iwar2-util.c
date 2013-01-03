@@ -32,6 +32,7 @@
 #include <time.h>
 #include <stdarg.h>
 #include <stdlib.h>
+#include <fcntl.h>
 #include "iwar2.h"
 
 struct _iWarConfig *config;
@@ -80,7 +81,7 @@ char  *iWar_Remove_Return(char *s) {
        char *s1, *s2;
        for(s1 = s2 = s;*s1;*s1++ = *s2++ )
        while( *s2 == '\n' )s2++;
-      return s;
+       return s;
 }
 
 
@@ -104,7 +105,8 @@ void iWar_Log (int type, const char *format,... ) {
 //   fprintf(config->sagan_log_stream, "[%s] [%s] - %s\n", chr, curtime, buf);
 //   fflush(config->sagan_log_stream);
 
-     if ( config->daemonize == 0) printf("[%s] %s\n", chr, buf);
+     printf("[%s] %s\n", chr, buf);
+//     if ( config->daemonize == 0) printf("[%s] %s\n", chr, buf);
      if ( type == 1 ) exit(1);
 }
 
@@ -171,4 +173,20 @@ strlcpy(tmp_result, "", sizeof(tmp_result));
 
 
 return(tmpbuf);
+}
+
+void iWar_Send_FIFO(char *fifo, char *message) { 
+
+int fd = 0; 
+int rc = 0; 
+char tmp[1024];
+
+snprintf(tmp, sizeof(tmp), "%s", message); 
+
+fd = open(fifo, O_RDWR);
+if (fd == -1) iWar_Log(1, "Can't open %s fifo for write", fifo);
+
+rc = write(fd, tmp, strlen(tmp));
+close(fd);
+
 }

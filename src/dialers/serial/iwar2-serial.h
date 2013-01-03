@@ -21,16 +21,31 @@
 /* iwar_serial.h
  */
 
+#define	DEFAULT_PORT "/dev/ttyUSB0"
+#define DEFAULT_PARITY "N"
+#define DEFAULT_BAUD "1200"
+#define DEFAULT_CONFIG "/usr/local/etc/iwar_serial.conf"
+#define DEFAULT_FIFO "/var/run/iwar.fifo"
+#define DEFAULT_TIMEOUT 30
+
 typedef struct _iWarSerialConfig _iWarSerialConfig;
 struct _iWarSerialConfig {
 
     char	 port[64]; 
-    char	 speed[64];
+    char	 parity[2];
+    char	 baud[8];  
+    char	 databits[2];
     char	 config[MAX_PATH];
     char	 fifo[MAX_PATH];
+    int	 	 hwhandshake;
+    int		 swhandshake;
+    int		 portfd;
+    int		 modem_timeout;
+
 
     char	 dial[256];
 
 };
 
 void iWar_Serial_Usage( void );
+void iWar_Send_Modem(int, const char *);

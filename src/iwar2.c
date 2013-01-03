@@ -86,6 +86,7 @@ memset(counters, 0, sizeof(_iWarCounters));
 
 
 char tmp[2];
+char tmp2[64];
 
 char c; 
 
@@ -108,8 +109,12 @@ while ((c = getopt_long(argc, argv, short_options, long_options, &option_index))
 
            case 'm':
 	   snprintf(config->iwar_mask, sizeof(config->iwar_mask), "%s", iWar_Remove_Return(optarg));
-	   config->iwar_start = atol(iWar_Mask_Replace(optarg, "0")); 
-	   config->iwar_end   = atol(iWar_Mask_Replace(optarg, "9")); 
+
+	   snprintf(tmp2, sizeof(tmp2), "%s", iWar_Mask_Replace(optarg, "0"));
+	   config->iwar_start = atol(tmp2);
+
+	   snprintf(tmp2, sizeof(tmp2), "%s", iWar_Mask_Replace(optarg, "9"));
+	   config->iwar_end = atol(tmp2);
 	   break;
 
 	   case 'p':
