@@ -39,13 +39,18 @@ pthread_cond_t iWarProcDoWork;
 pthread_mutex_t iWarProcWorkMutex;
 
 int iwar_work;
+//char number[64]; 
 
 void iWar_Mother_Forker ( void ) {
 
 for (;;) {
 
         pthread_mutex_lock(&iWarProcWorkMutex);
-	while ( iwar_work == 0 ) pthread_cond_wait(&iWarProcDoWork, &iWarProcWorkMutex);	
+	//while ( iwar_work == 0 ) pthread_cond_wait(&iWarProcDoWork, &iWarProcWorkMutex);	
+	pthread_cond_wait(&iWarProcDoWork, &iWarProcWorkMutex);
+//	printf("got work %s\n", number);
+	pthread_mutex_unlock(&iWarProcWorkMutex);
+	
 
 }
 } /* End of iWar_Mother_Forker */

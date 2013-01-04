@@ -46,8 +46,6 @@ struct _iWarAlertConfig *alertconfig;
 pthread_cond_t iWarProcDoWork=PTHREAD_COND_INITIALIZER;
 pthread_mutex_t iWarProcWorkMutex=PTHREAD_MUTEX_INITIALIZER;
 
-int iwar_work=0;
-
 int main(int argc, char **argv) {
 
 int fd=0;
@@ -67,6 +65,7 @@ int option_index = 0;
 
 int i=0;
 int rc=0;
+//int iwar_msgslot=0;
 
 char iwar_buffer[IWAR_FIFO_BUFFER];
 
@@ -134,6 +133,8 @@ pthread_attr_t thread_attr;
 pthread_attr_init(&thread_attr);
 pthread_attr_setdetachstate(&thread_attr,  PTHREAD_CREATE_DETACHED);
 
+printf("-> %d\n", counters->serial_count);
+
 iWar_Initscreen();
 iWar_Mainscreen();
 iWar_Intro();
@@ -141,7 +142,6 @@ iWar_Intro();
 terminalwin = newwin(6, counters->max_col-5, counters->max_row-7,2);
 scrollok(terminalwin, TRUE);
 wrefresh(terminalwin);
-
 
 if ( config->serial_flag ) {
 
@@ -159,7 +159,10 @@ fd = open(config->iwar_fifo, O_RDONLY);
 
 if(fd < 0) iWar_Display_Info("Error opening FIFO!", 1, 1); 
 
+/* Start thread that'll feed the other threads here (See the iwar-fifo) */
+
 while(1) {
+
 
                 i = read(fd, &c, 1);
                 if (i < 0) iWar_Update_Status("Error reading FIFO [read]");

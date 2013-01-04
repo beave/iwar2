@@ -196,12 +196,12 @@ while( modem_timer < serialconfig->modem_timeout + 5) {
 	      exit(0);
 	      }
 
-	   if (strstr(modem_in, "NO CARRIER")) { 
+	   if (!strcmp(modem_in, "NO CARRIER") && connect_flag == 0 ) { 
    	      printf("NO CARRIER!\n");
 	      exit(0);
 	      }
 
-	   if (strstr(modem_in, "BUSY")) {
+	   if (!strcmp(modem_in, "BUSY") && connect_flag == 0) {
 	      printf("BUSY\n");
 	      exit(0);
 	      }

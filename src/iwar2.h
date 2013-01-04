@@ -49,8 +49,8 @@ struct _iWarVar {
 typedef struct _iWarCounters _iWarCounters;
 struct _iWarCounters {
 
-	int iwars_count; 
-	int iwarm_count;
+	int iwars_count; 		// NOT NEEDED?
+	int iwarm_count;		// NOT NEEDED?
 
 	int var_count;
 
