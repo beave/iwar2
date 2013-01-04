@@ -41,6 +41,7 @@
 struct _iWarVar *var;
 struct _iWarCounters *counters;
 struct _iWarConfig *config;
+struct _iWarAlertConfig *alertconfig;
 
 pthread_cond_t iWarProcDoWork=PTHREAD_COND_INITIALIZER;
 pthread_mutex_t iWarProcWorkMutex=PTHREAD_MUTEX_INITIALIZER;
@@ -57,10 +58,11 @@ const struct option long_options[] = {
         { "config",       required_argument,    NULL,   'c' },
 	{ "mask", 	  required_argument,    NULL,   'm' },
 	{ "predial", 	  required_argument,    NULL, 	'p' }, 
+	{ "postdial",     required_argument,    NULL,   'P' },
         {0, 0, 0, 0}
 };
 
-static const char *short_options = "m:c:hD";
+static const char *short_options = "P:p:m:c:hD";
 int option_index = 0;
 
 int i=0;
@@ -176,12 +178,14 @@ while(1) {
 		   ptmp = strtok_r(NULL, ":", &tok);
 		   strlcpy(status, iWar_Remove_Return(ptmp), sizeof(status)); 
 
-		   /* This will be replaced with some sort of status file/array? */
+		   /* Search for result from dialer that we're interested in */
 
-		   /* Just PoC */
-
-		   if(!strcmp(status, "CALLING")) iWar_Update_Status("Calling %s", dialed_number);
-		   if(!strcmp(status, "CONNECTED")) iWar_Update_Status("CONNECTED %s", dialed_number);
+		   for (i=0; i<counters->alert_config_count; i++) { 
+		       if (!strcmp(status, alertconfig[i].alert)) { 
+		          iWar_Update_Status("%s at %s", alertconfig[i].alert, dialed_number); 
+			  // Record to log here
+			  }
+	           }
 
     		   strncpy(iwar_buffer, "", sizeof(iwar_buffer));
     		   c=0;

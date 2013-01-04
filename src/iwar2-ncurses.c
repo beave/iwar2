@@ -119,7 +119,8 @@ void iWar_Mainscreen()
         for (b = 0; b < maxcol-2; b++) { addch(ACS_HLINE); }
         addch(ACS_URCORNER);
 
-        move(maxrow-8, maxcol-20); printw("[Terminal Window]");
+        //move(maxrow-8, maxcol-35); printw("[Thread Status Window]");
+	move(maxrow-8, 5); printw("[Thread Status Window]");
 
         /* For online information */
 	
@@ -144,7 +145,7 @@ void iWar_Mainscreen()
         move(3,0); addch(ACS_VLINE); printw(" Pre/Post Dial   :");
         move(4,0); addch(ACS_VLINE); printw(" Log File        :");
         move(5,0); addch(ACS_VLINE); printw(" Status          :");
-        move(6,0); addch(ACS_VLINE); printw(" Idle            :");
+        move(6,0); addch(ACS_VLINE); //printw(" Idle            :");	/* Multi-threaded,  no longer a single timera /*
         move(7,0); addch(ACS_VLINE); printw(" CNAM Lookup     :");
 
         move(8,0);
