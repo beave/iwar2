@@ -36,6 +36,7 @@
 #include <getopt.h>
 
 #include "iwar2-defs.h"
+#include "iwar2.h"
 #include "iwar2-serial.h"
 #include "sysdep.h"
 
@@ -69,6 +70,8 @@ int rc=0;
 int i=0;
 int timer=0;
 int modem_timer=0;
+
+sbool connect_flag=0;
 
 fd_set fds;
 struct timeval tv;
@@ -168,7 +171,7 @@ m_flush(serialconfig->portfd);        /* Flush any old data out before we start 
 snprintf(tmpdial, sizeof(tmpdial), "ATDT%s\r", serialconfig->dial);
 iWar_Send_Modem(serialconfig->portfd, tmpdial);
 
-while( modem_timer < serialconfig->modem_timeout ) { 
+while( modem_timer < serialconfig->modem_timeout + 5) { 
 
 	
         tv.tv_sec=1;                    /* 1 second */
@@ -182,6 +185,8 @@ while( modem_timer < serialconfig->modem_timeout ) {
 	   snprintf(tmpbuf, sizeof(tmpbuf), "%c", buf[0]);
 	   strlcat(modem_in, tmpbuf, sizeof(modem_in));
 	   
+	   printf("%s\n", modem_in);
+	   
 	   if ( (int)buf[0] == 13 || (int)buf[0] == 10 ) strlcpy(modem_in, "", sizeof(modem_in));
 
 	   if (strstr(modem_in, "NO DIALTONE") || strstr(modem_in, "NO DIAL TONE")) { 
@@ -191,11 +196,20 @@ while( modem_timer < serialconfig->modem_timeout ) {
 	      exit(0);
 	      }
 
-	   if (strstr(modem_in, "NO CARRIER")) printf("NO CARRIER\n");
+	   if (strstr(modem_in, "NO CARRIER")) { 
+   	      printf("NO CARRIER!\n");
+	      exit(0);
+	      }
+
+	   if (strstr(modem_in, "BUSY")) {
+	      printf("BUSY\n");
+	      exit(0);
+	      }
 
 	   modem_timer=0;
 	}
 
+if ( connect_flag == 0 && modem_timer == serialconfig->modem_timeout  ) iWar_Send_Modem(serialconfig->portfd, "\r"); 		/* Nudge for "NO CARRIER".  If this doesn't happen the modem might be hung */
 
 modem_timer++;
 printf("timer: %d\n", modem_timer);
