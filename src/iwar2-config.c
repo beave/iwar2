@@ -35,9 +35,11 @@
 #include "iwar2.h"
 
 struct _iWarConfig *config;
+struct _iWarAlertConfig *alertconfig;
 struct _iWarVar *var;
 struct _iWarCounters *counters;
 struct _iWarS *serial; 
+
 
 void iWar_Load_Config () { 
 
@@ -59,6 +61,7 @@ counters->var_count=0;
 /* Some defaults */
 
 snprintf(config->iwar_fifo, sizeof(config->iwar_fifo), "%s", IWAR_FIFO);
+snprintf(config->iwar_alert_config, sizeof(config->iwar_alert_config), "%s", IWAR_ALERT_CONFIG);
 
 
 if ((iwar_cfg = fopen(config->iwar_config_file, "r")) == NULL) 
@@ -84,6 +87,7 @@ while(fgets(tmpbuf, sizeof(tmpbuf), iwar_cfg) != NULL) {
 	 counters->var_count++; 
 
 	 if (!strcmp(iwar_var1, "FIFO")) snprintf(config->iwar_fifo, sizeof(config->iwar_fifo), "%s", iwar_var2);
+	 if (!strcmp(iwar_var1, "ALERT_CONFIG")) snprintf(config->iwar_alert_config, sizeof(config->iwar_alert_config), "%s", iwar_var2);
 	 }
 
      /* Load sequential options */
@@ -99,6 +103,24 @@ while(fgets(tmpbuf, sizeof(tmpbuf), iwar_cfg) != NULL) {
 	}
   }
 fclose(iwar_cfg);
+
+/* Load the alert file */
+
+if ((iwar_cfg = fopen(config->iwar_alert_config, "r")) == NULL)
+    iWar_Log(1, "[%s, line %d] Cannot open alert configuration file (%s)", __FILE__,  __LINE__, config->iwar_alert_config);
+
+while(fgets(tmpbuf, sizeof(tmpbuf), iwar_cfg) != NULL) {
+
+     if (tmpbuf[0] == '#') continue;
+     if (tmpbuf[0] == ';') continue;
+     if (tmpbuf[0] == 10 ) continue;
+     if (tmpbuf[0] == 32 ) continue;
+
+     alertconfig = (_iWarAlertConfig *) realloc(alertconfig, (counters->alert_config_count+1) * sizeof(_iWarAlertConfig));   /* Allocate memory */
+     snprintf(alertconfig[counters->alert_config_count].alert, sizeof(alertconfig[counters->alert_config_count].alert), "%s", iWar_Remove_Return(tmpbuf));
+     counters->alert_config_count++; 
+}
+
 
 } /* end of iWar_Load_Config */
 

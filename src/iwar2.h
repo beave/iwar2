@@ -24,12 +24,20 @@ struct _iWarConfig {
     sbool	 serial_flag;
 
     char	 iwar_config_file[MAX_PATH]; 
+    char	 iwar_alert_config[MAX_PATH];
     char	 iwar_fifo[MAX_PATH];
 
     char	 iwar_predial[128];
     char	 iwar_mask[30];
     uint64_t	 iwar_start;
     uint64_t	 iwar_end;
+};
+
+typedef struct _iWarAlertConfig _iWarAlertConfig;
+struct _iWarAlertConfig {
+
+    char	 alert[32];
+
 };
 
 typedef struct _iWarVar _iWarVar;
@@ -47,6 +55,7 @@ struct _iWarCounters {
 	int var_count;
 
 	int serial_count;
+	int alert_config_count;
 
 	int max_row; 
 	int max_col;
