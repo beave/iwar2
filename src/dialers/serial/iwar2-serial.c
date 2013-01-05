@@ -189,20 +189,21 @@ while( modem_timer < serialconfig->modem_timeout + 5) {
 	   
 	   if ( (int)buf[0] == 13 || (int)buf[0] == 10 ) strlcpy(modem_in, "", sizeof(modem_in));
 
+	   /*CONNECT FLAG */
 	   if (strstr(modem_in, "NO DIALTONE") || strstr(modem_in, "NO DIAL TONE")) { 
-	      iWar_Send_FIFO(serialconfig->fifo, "NOID:NONUMBER:NO DIALTONE\n");
+	      iWar_Send_FIFO(serialconfig->fifo, "NOID|NONUMBER|NO DIALTONE\n");
 	      m_restorestate(serialconfig->portfd);        /* Restore state from "savestate" */
 	      close(serialconfig->portfd);                 /* Close serial/output file */
 	      exit(0);
 	      }
 
 	   if (!strcmp(modem_in, "NO CARRIER") && connect_flag == 0 ) { 
-   	      printf("NO CARRIER!\n");
+	      iWar_Send_FIFO(serialconfig->fifo, "NOID|NONUMBER|NO CARRIER\n");
 	      exit(0);
 	      }
 
 	   if (!strcmp(modem_in, "BUSY") && connect_flag == 0) {
-	      printf("BUSY\n");
+	      iWar_Send_FIFO(serialconfig->fifo, "NOID|NONUMBER|BUSY\n");
 	      exit(0);
 	      }
 

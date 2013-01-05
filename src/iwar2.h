@@ -67,6 +67,12 @@ struct _iWarS {
         char command[512];
 };
 
+typedef struct _iWar_Dialer_Number _iWar_Dialer_Number;
+struct _iWar_Dialer_Number {
+        char number[64];
+};
+
+
 void  iWar_Mainscreen( void );
 void  iWar_Testscreen( void );
 void  iWar_Intro( void );
@@ -81,3 +87,5 @@ char *iWar_Var_To_Value(char *);
 void  iWar_Mother_Forker ( void ); 
 void  iWar_Update_Status (const char *,... );
 void  iWar_Send_FIFO(char *, char *);
+void  iWar_Master ( void );
+

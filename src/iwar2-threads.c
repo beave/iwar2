@@ -32,25 +32,69 @@
 
 #include <stdio.h>
 #include <pthread.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
 
+#include "iwar2-defs.h"
+#include "iwar2.h"
+
+
+struct _iWarCounters *counters;
+struct _iWar_Dialer_Number *iWarDialerNumber;
+struct _iWarConfig *config;
+struct _iWarS *serial;
 
 pthread_cond_t iWarProcDoWork;
 pthread_mutex_t iWarProcWorkMutex;
 
-int iwar_work;
+int iwar_msgslot;
 //char number[64]; 
 
 void iWar_Mother_Forker ( void ) {
 
+int rc;
+
 for (;;) {
 
         pthread_mutex_lock(&iWarProcWorkMutex);
-	//while ( iwar_work == 0 ) pthread_cond_wait(&iWarProcDoWork, &iWarProcWorkMutex);	
-	pthread_cond_wait(&iWarProcDoWork, &iWarProcWorkMutex);
-//	printf("got work %s\n", number);
+	while ( iwar_msgslot == 0 ) pthread_cond_wait(&iWarProcDoWork, &iWarProcWorkMutex);	
+	iWar_Send_FIFO(config->iwar_fifo, "-|-|Dialing\n");
+//	pthread_cond_wait(&iWarProcDoWork, &iWarProcWorkMutex);
+//	printf("got work %s\n", WarDialerNumber[iwar_msgslot].number);
+//	printf("\nGOT WORK\n");
+	rc = execl(serial->command, serial->command, NULL, (char *)NULL);
+	sleep(60);
+//	iWar_Send_FIFO(config->iwar_fifo, "1|2|CONNECT\n");
+	iWar_Send_FIFO(config->iwar_fifo, "-|-|DONE\n");
 	pthread_mutex_unlock(&iWarProcWorkMutex);
-	
+	iwar_msgslot--;
 
 }
 } /* End of iWar_Mother_Forker */
+
+void iWar_Master ( void ) { 
+
+iWarDialerNumber = malloc(counters->serial_count * sizeof(struct _iWar_Dialer_Number));
+
+for (;;) { 
+
+//	if ( iwar_msgslot >= counters->serial_count )  { 
+//	   iWar_Send_FIFO(config->iwar_fifo, "-|-|Idle!\n");
+          
+ //           sleep(1); 
+
+//	   } else { 
+	   
+	   iWar_Send_FIFO(config->iwar_fifo, "-|-|Got work!\n");
+           
+	   pthread_mutex_lock(&iWarProcWorkMutex);
+	   snprintf(iWarDialerNumber[iwar_msgslot].number, sizeof(iWarDialerNumber[iwar_msgslot].number), "1234");
+	   iwar_msgslot++; 
+	   pthread_cond_signal(&iWarProcDoWork);
+	   pthread_mutex_unlock(&iWarProcWorkMutex);
+	   sleep(1);
+//	}
+    }
+}

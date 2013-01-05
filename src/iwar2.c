@@ -65,7 +65,7 @@ int option_index = 0;
 
 int i=0;
 int rc=0;
-//int iwar_msgslot=0;
+int iwar_msgslot=0;
 
 char iwar_buffer[IWAR_FIFO_BUFFER];
 
@@ -129,11 +129,17 @@ if (config->iwar_start == config->iwar_end) iWar_Log(1, "Nothing to dial!");
 
 iWar_Load_Config(); 
 
-pthread_attr_t thread_attr;
-pthread_attr_init(&thread_attr);
-pthread_attr_setdetachstate(&thread_attr,  PTHREAD_CREATE_DETACHED);
+pthread_attr_t dialer_thread_attr;
+pthread_attr_init(&dialer_thread_attr);
+pthread_attr_setdetachstate(&dialer_thread_attr,  PTHREAD_CREATE_DETACHED);
 
-printf("-> %d\n", counters->serial_count);
+/* Master thread that feeds numbers to children */
+
+pthread_attr_t master_thread_attr;
+pthread_attr_init(&master_thread_attr);
+pthread_attr_setdetachstate(&master_thread_attr,  PTHREAD_CREATE_DETACHED);
+
+pthread_t master_thread_id;
 
 iWar_Initscreen();
 iWar_Mainscreen();
@@ -143,14 +149,18 @@ terminalwin = newwin(6, counters->max_col-5, counters->max_row-7,2);
 scrollok(terminalwin, TRUE);
 wrefresh(terminalwin);
 
+rc = pthread_create ( &master_thread_id, &master_thread_attr, (void *)iWar_Master, NULL );
+if ( rc != 0 ) iWar_Log(1, "Could not pthread_create() master thread [Error code: %d]", rc);
+
+
 if ( config->serial_flag ) {
 
 iWar_Display_Info("Spinning serial up threads", 1, 2);
 
-pthread_t thread_id[counters->serial_count];
+pthread_t dialer_thread_id[counters->serial_count];
 for (i = 0; i < counters->serial_count; i++) {
-     rc = pthread_create ( &thread_id[i], &thread_attr, (void *)iWar_Mother_Forker, NULL );
-     if ( rc != 0 ) iWar_Log(1, "Could not pthread_create() for I/O processors [Error code: %d]", rc);
+     rc = pthread_create ( &dialer_thread_id[i], &dialer_thread_attr, (void *)iWar_Mother_Forker, NULL );
+     if ( rc != 0 ) iWar_Log(1, "Could not pthread_create() dialer threads [Error code: %d]", rc);
      }
 }
 
@@ -177,13 +187,13 @@ while(1) {
     		   wprintw(terminalwin, "%s", iwar_buffer);
     		   wrefresh(terminalwin);
 
-		   ptmp = strtok_r(iwar_buffer, ":", &tok); 
+		   ptmp = strtok_r(iwar_buffer, "|", &tok); 
 		   strlcpy(id, ptmp, sizeof(id));
 
-		   ptmp = strtok_r(NULL, ":", &tok);
+		   ptmp = strtok_r(NULL, "|", &tok);
 		   strlcpy(dialed_number, ptmp, sizeof(dialed_number));
 		   
-		   ptmp = strtok_r(NULL, ":", &tok);
+		   ptmp = strtok_r(NULL, "|", &tok);
 		   strlcpy(status, iWar_Remove_Return(ptmp), sizeof(status)); 
 
 		   /* Search for result from dialer that we're interested in */
