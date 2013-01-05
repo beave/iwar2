@@ -91,12 +91,13 @@ while(fgets(tmpbuf, sizeof(tmpbuf), iwar_cfg) != NULL) {
 	 }
 
      /* Load sequential options */
+	
+     /* Doesn't work with = .. For example --fifo $FIFO work,  but --fifo=$FIFO doesnt */
 
      if (!strcmp(iwar_option, "S:")) { 
         config->serial_flag=1; 
         iwar_var1 = strtok_r(NULL, ":", &tok);  /* Store the name of the var */
-	snprintf(s_tmp, sizeof(s_tmp), "%s", iWar_Between_Quotes(iwar_var1)); 
-	strlcpy(tmp, iWar_Var_To_Value(s_tmp), sizeof(tmp));
+	strlcpy(tmp, iWar_Var_To_Value(iwar_var1), sizeof(tmp));
 	serial = (_iWarS *) realloc(var, (counters->serial_count+1) * sizeof(_iWarS));   /* Allocate memory */
 	snprintf(serial[counters->serial_count].command, sizeof(serial[counters->serial_count].command), "%s", tmp);
 	counters->serial_count++;

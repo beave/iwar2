@@ -157,10 +157,10 @@ while ((c = getopt_long(argc, argv, short_options, long_options, &option_index))
            }
 }
 
-if (!strcmp(serialconfig->dial, "")) iWar_Log(1, "No number to dial was specifed");
+if (!strcmp(serialconfig->dial, "")) iWar_Send_FIFO(serialconfig->fifo, "-|ERROR|No number specified.\n");
 
 serialconfig->portfd = open(serialconfig->port, O_RDWR); 
-if (serialconfig->portfd == -1) iWar_Log(1, "Can't open %s", serialconfig->port);
+if (serialconfig->portfd == -1)  iWar_Send_FIFO(serialconfig->fifo, "-|ERROR|Can't open serial port.\n");
 
 m_savestate(serialconfig->portfd);
 m_setparms(serialconfig->portfd,serialconfig->baud,serialconfig->parity,serialconfig->databits,serialconfig->hwhandshake,serialconfig->swhandshake);
@@ -181,16 +181,16 @@ while( modem_timer < serialconfig->modem_timeout + 5) {
 	
 	if (select(serialconfig->portfd+1, &fds, NULL, NULL, &tv)) { 
            rc = read(serialconfig->portfd, buf, 1);
-	   if ( rc == -1 ) iWar_Log(1, "Error read() from port!");
+	   if ( rc == -1 ) iWar_Send_FIFO(serialconfig->fifo, "-|ERROR|Error reading from serial port.\n");
 	   snprintf(tmpbuf, sizeof(tmpbuf), "%c", buf[0]);
 	   strlcat(modem_in, tmpbuf, sizeof(modem_in));
 	   
-	   printf("%s\n", modem_in);
+	   //printf("%s\n", modem_in);
 	   
 	   if ( (int)buf[0] == 13 || (int)buf[0] == 10 ) strlcpy(modem_in, "", sizeof(modem_in));
 
 	   /*CONNECT FLAG */
-	   if (strstr(modem_in, "NO DIALTONE") || strstr(modem_in, "NO DIAL TONE")) { 
+	   if (strstr(modem_in, "NO DIALTONE")  || strstr(modem_in, "NO DIAL TONE")) { 
 	      iWar_Send_FIFO(serialconfig->fifo, "NOID|NONUMBER|NO DIALTONE\n");
 	      m_restorestate(serialconfig->portfd);        /* Restore state from "savestate" */
 	      close(serialconfig->portfd);                 /* Close serial/output file */
@@ -213,13 +213,9 @@ while( modem_timer < serialconfig->modem_timeout + 5) {
 if ( connect_flag == 0 && modem_timer == serialconfig->modem_timeout  ) iWar_Send_Modem(serialconfig->portfd, "\r"); 		/* Nudge for "NO CARRIER".  If this doesn't happen the modem might be hung */
 
 modem_timer++;
-printf("timer: %d\n", modem_timer);
 }
 
 m_restorestate(serialconfig->portfd);        /* Restore state from "savestate" */
 close(serialconfig->portfd);                 /* Close serial/output file */
-printf("Closing\n");
 exit(0);
-
-//printf("BOOM\n");
 }
