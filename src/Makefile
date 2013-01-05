@@ -35,7 +35,7 @@ POST_UNINSTALL = :
 build_triplet = x86_64-unknown-linux-gnu
 host_triplet = x86_64-unknown-linux-gnu
 target_triplet = x86_64-unknown-linux-gnu
-bin_PROGRAMS = iwar2$(EXEEXT)
+bin_PROGRAMS = iwar2$(EXEEXT) iwar2_serial$(EXEEXT)
 subdir = src
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -54,6 +54,9 @@ am_iwar2_OBJECTS = iwar2.$(OBJEXT) iwar2-strlcpy.$(OBJEXT) \
 	iwar2-threads.$(OBJEXT) iwar2-usage.$(OBJEXT)
 iwar2_OBJECTS = $(am_iwar2_OBJECTS)
 iwar2_LDADD = $(LDADD)
+am_iwar2_serial_OBJECTS = iwar_serial.$(OBJEXT) sysdep1.$(OBJEXT)
+iwar2_serial_OBJECTS = $(am_iwar2_serial_OBJECTS)
+iwar2_serial_LDADD = $(LDADD)
 DEFAULT_INCLUDES = -I. -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -62,8 +65,8 @@ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-SOURCES = $(iwar2_SOURCES)
-DIST_SOURCES = $(iwar2_SOURCES)
+SOURCES = $(iwar2_SOURCES) $(iwar2_serial_SOURCES)
+DIST_SOURCES = $(iwar2_SOURCES) $(iwar2_serial_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -167,6 +170,7 @@ top_build_prefix = ../
 top_builddir = ..
 top_srcdir = ..
 AUTOMAKE_OPIONS = foreign no-dependencies
+AM_CFLAGS = -D_POSIX
 iwar2_SOURCES = iwar2.c \
 iwar2-strlcpy.c \
 iwar2-strlcat.c \
@@ -175,6 +179,9 @@ iwar2-ncurses.c \
 iwar2-config.c  \
 iwar2-threads.c \
 iwar2-usage.c
+
+iwar2_serial_SOURCES = dialers/serial/iwar_serial.c \
+dialers/serial/sysdep1.c
 
 all: all-am
 
@@ -250,6 +257,9 @@ clean-binPROGRAMS:
 iwar2$(EXEEXT): $(iwar2_OBJECTS) $(iwar2_DEPENDENCIES) 
 	@rm -f iwar2$(EXEEXT)
 	$(LINK) $(iwar2_OBJECTS) $(iwar2_LDADD) $(LIBS)
+iwar2_serial$(EXEEXT): $(iwar2_serial_OBJECTS) $(iwar2_serial_DEPENDENCIES) 
+	@rm -f iwar2_serial$(EXEEXT)
+	$(LINK) $(iwar2_serial_OBJECTS) $(iwar2_serial_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -265,6 +275,8 @@ include ./$(DEPDIR)/iwar2-threads.Po
 include ./$(DEPDIR)/iwar2-usage.Po
 include ./$(DEPDIR)/iwar2-util.Po
 include ./$(DEPDIR)/iwar2.Po
+include ./$(DEPDIR)/iwar_serial.Po
+include ./$(DEPDIR)/sysdep1.Po
 
 .c.o:
 	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -279,6 +291,34 @@ include ./$(DEPDIR)/iwar2.Po
 #	source='$<' object='$@' libtool=no \
 #	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
 #	$(COMPILE) -c `$(CYGPATH_W) '$<'`
+
+iwar_serial.o: dialers/serial/iwar_serial.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT iwar_serial.o -MD -MP -MF $(DEPDIR)/iwar_serial.Tpo -c -o iwar_serial.o `test -f 'dialers/serial/iwar_serial.c' || echo '$(srcdir)/'`dialers/serial/iwar_serial.c
+	$(am__mv) $(DEPDIR)/iwar_serial.Tpo $(DEPDIR)/iwar_serial.Po
+#	source='dialers/serial/iwar_serial.c' object='iwar_serial.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o iwar_serial.o `test -f 'dialers/serial/iwar_serial.c' || echo '$(srcdir)/'`dialers/serial/iwar_serial.c
+
+iwar_serial.obj: dialers/serial/iwar_serial.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT iwar_serial.obj -MD -MP -MF $(DEPDIR)/iwar_serial.Tpo -c -o iwar_serial.obj `if test -f 'dialers/serial/iwar_serial.c'; then $(CYGPATH_W) 'dialers/serial/iwar_serial.c'; else $(CYGPATH_W) '$(srcdir)/dialers/serial/iwar_serial.c'; fi`
+	$(am__mv) $(DEPDIR)/iwar_serial.Tpo $(DEPDIR)/iwar_serial.Po
+#	source='dialers/serial/iwar_serial.c' object='iwar_serial.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o iwar_serial.obj `if test -f 'dialers/serial/iwar_serial.c'; then $(CYGPATH_W) 'dialers/serial/iwar_serial.c'; else $(CYGPATH_W) '$(srcdir)/dialers/serial/iwar_serial.c'; fi`
+
+sysdep1.o: dialers/serial/sysdep1.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT sysdep1.o -MD -MP -MF $(DEPDIR)/sysdep1.Tpo -c -o sysdep1.o `test -f 'dialers/serial/sysdep1.c' || echo '$(srcdir)/'`dialers/serial/sysdep1.c
+	$(am__mv) $(DEPDIR)/sysdep1.Tpo $(DEPDIR)/sysdep1.Po
+#	source='dialers/serial/sysdep1.c' object='sysdep1.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o sysdep1.o `test -f 'dialers/serial/sysdep1.c' || echo '$(srcdir)/'`dialers/serial/sysdep1.c
+
+sysdep1.obj: dialers/serial/sysdep1.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT sysdep1.obj -MD -MP -MF $(DEPDIR)/sysdep1.Tpo -c -o sysdep1.obj `if test -f 'dialers/serial/sysdep1.c'; then $(CYGPATH_W) 'dialers/serial/sysdep1.c'; else $(CYGPATH_W) '$(srcdir)/dialers/serial/sysdep1.c'; fi`
+	$(am__mv) $(DEPDIR)/sysdep1.Tpo $(DEPDIR)/sysdep1.Po
+#	source='dialers/serial/sysdep1.c' object='sysdep1.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o sysdep1.obj `if test -f 'dialers/serial/sysdep1.c'; then $(CYGPATH_W) 'dialers/serial/sysdep1.c'; else $(CYGPATH_W) '$(srcdir)/dialers/serial/sysdep1.c'; fi`
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
