@@ -169,6 +169,8 @@ m_hupcl(serialconfig->portfd, 1);
 m_flush(serialconfig->portfd);        /* Flush any old data out before we start */
 
 snprintf(tmpdial, sizeof(tmpdial), "ATDT%s\r", serialconfig->dial);
+iWar_Send_FIFO(serialconfig->fifo, "%s|DIALING|Calling %s....\n", serialconfig->dial, serialconfig->dial);
+
 iWar_Send_Modem(serialconfig->portfd, tmpdial);
 
 while( modem_timer < serialconfig->modem_timeout + 5) { 
@@ -181,7 +183,7 @@ while( modem_timer < serialconfig->modem_timeout + 5) {
 	
 	if (select(serialconfig->portfd+1, &fds, NULL, NULL, &tv)) { 
            rc = read(serialconfig->portfd, buf, 1);
-	   if ( rc == -1 ) iWar_Send_FIFO(serialconfig->fifo, "-|ERROR|Error reading from serial port.\n");
+	   if ( rc == -1 ) iWar_Send_FIFO(serialconfig->fifo, "%s|ERROR|Error reading from serial port.\n", serialconfig->dial);
 	   snprintf(tmpbuf, sizeof(tmpbuf), "%c", buf[0]);
 	   strlcat(modem_in, tmpbuf, sizeof(modem_in));
 	   
@@ -191,19 +193,19 @@ while( modem_timer < serialconfig->modem_timeout + 5) {
 
 	   /*CONNECT FLAG */
 	   if (strstr(modem_in, "NO DIALTONE")  || strstr(modem_in, "NO DIAL TONE")) { 
-	      iWar_Send_FIFO(serialconfig->fifo, "NOID|NONUMBER|NO DIALTONE\n");
+	      iWar_Send_FIFO(serialconfig->fifo, "%s|NO DIALTONE|NO DIALTONE\n", serialconfig->dial);
 	      m_restorestate(serialconfig->portfd);        /* Restore state from "savestate" */
 	      close(serialconfig->portfd);                 /* Close serial/output file */
 	      exit(0);
 	      }
 
 	   if (!strcmp(modem_in, "NO CARRIER") && connect_flag == 0 ) { 
-	      iWar_Send_FIFO(serialconfig->fifo, "NOID|NONUMBER|NO CARRIER\n");
+	      iWar_Send_FIFO(serialconfig->fifo, "%s|NO CARRIER|NO CARRIER\n", serialconfig->dial);
 	      exit(0);
 	      }
 
 	   if (!strcmp(modem_in, "BUSY") && connect_flag == 0) {
-	      iWar_Send_FIFO(serialconfig->fifo, "NOID|NONUMBER|BUSY\n");
+	      iWar_Send_FIFO(serialconfig->fifo, "%s|BUSY|The number is busy\n", serialconfig->dial);
 	      exit(0);
 	      }
 

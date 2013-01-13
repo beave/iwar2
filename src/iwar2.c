@@ -32,6 +32,8 @@
 #include <string.h>
 #include <getopt.h>
 #include <pthread.h>
+#include <stdint.h>
+#include <inttypes.h>
 #include <fcntl.h>
 
 #include "version.h"
@@ -71,9 +73,9 @@ char iwar_buffer[IWAR_FIFO_BUFFER];
 char *ptmp=NULL;
 char *tok=NULL;
 
-char id[15] = { 0 };
 char dialed_number[30] = { 0 }; 
 char status[30] = { 0 }; 
+char human_message[256] = { 0 };
 
 /* Allocate memroy for global struct _SaganConfig */
 config = malloc(sizeof(_iWarConfig));
@@ -109,10 +111,10 @@ while ((c = getopt_long(argc, argv, short_options, long_options, &option_index))
 	   snprintf(config->iwar_mask, sizeof(config->iwar_mask), "%s", iWar_Remove_Return(optarg));
 
 	   snprintf(tmp2, sizeof(tmp2), "%s", iWar_Mask_Replace(optarg, "0"));
-	   config->iwar_start = atol(tmp2);
+	   config->iwar_start = strtoull(tmp2, NULL, 10);
 
 	   snprintf(tmp2, sizeof(tmp2), "%s", iWar_Mask_Replace(optarg, "9"));
-	   config->iwar_end = atol(tmp2);
+	   config->iwar_end = strtoull(tmp2, NULL, 10);
 	   break;
 
 	   case 'p':
@@ -125,6 +127,10 @@ while ((c = getopt_long(argc, argv, short_options, long_options, &option_index))
 if (config->iwar_start == 0) iWar_Log(1, "No MASK speicifed! [start]");
 if (config->iwar_end == 0) iWar_Log(1, "No MASK speicifed! [end]");
 if (config->iwar_start == config->iwar_end) iWar_Log(1, "Nothing to dial!");
+
+
+printf("  %" PRIu64 " - %" PRIu64 "\n", config->iwar_start, config->iwar_end);
+sleep(1);
 
 iWar_Load_Config(); 
 
@@ -187,13 +193,22 @@ while(1) {
     		   wrefresh(terminalwin);
 
 		   ptmp = strtok_r(iwar_buffer, "|", &tok); 
-		   strlcpy(id, ptmp, sizeof(id));
+		   strlcpy(dialed_number, ptmp, sizeof(dialed_number));
 
 		   ptmp = strtok_r(NULL, "|", &tok);
-		   strlcpy(dialed_number, ptmp, sizeof(dialed_number));
+		   strlcpy(status, ptmp, sizeof(status));
 		   
 		   ptmp = strtok_r(NULL, "|", &tok);
-		   strlcpy(status, iWar_Remove_Return(ptmp), sizeof(status)); 
+		   strlcpy(human_message, iWar_Remove_Return(ptmp), sizeof(human_message)); 
+
+		if (!strcmp(status, "DIALING")) iWar_Update_Status("Calling %s....", dialed_number);
+		if (!strcmp(status, "BUSY")) iWar_Update_Status("%s is busy.", dialed_number); 
+		if (!strcmp(status, "NO CARRIER")) iWar_Update_Status("Nothing was found at %s", dialed_number);
+
+		if (!strcmp(status, "CONNECT")) { 
+		   iWar_Update_Status("CONNECTED at %s!", dialed_number);
+		   // set connect flag 
+		   }
 
 		   /* Search for result from dialer that we're interested in */
 

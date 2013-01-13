@@ -39,6 +39,9 @@ struct _iWarConfig *config;
 struct _iWarVar *var;
 struct _iWarCounters *counters;
 
+uint64_t number_to_dial;
+
+
 char *iWar_Replace_Str(char *str, char *orig, char *rep)
 {
 
@@ -175,18 +178,34 @@ strlcpy(tmp_result, "", sizeof(tmp_result));
 return(tmpbuf);
 }
 
-void iWar_Send_FIFO(char *fifo, char *message) { 
+void iWar_Send_FIFO(char *fifo, const char *format,...) { 
 
+char buf[1024];
+va_list ap;
+va_start(ap, format);
+char *chr="*";
 int fd = 0; 
 int rc = 0; 
-char tmp[1024];
 
-snprintf(tmp, sizeof(tmp), "%s", message); 
+vsnprintf(buf, sizeof(buf), format, ap);
 
 fd = open(fifo, O_RDWR);
 if (fd == -1) iWar_Log(1, "Can't open %s fifo for write", fifo);
 
-rc = write(fd, tmp, strlen(tmp));
+rc = write(fd, buf, strlen(buf));
 close(fd);
-
 }
+
+uint64_t iWar_Get_Next_Number( sbool dialtype ) { 
+
+/* Sequential */
+
+//if ( dialtype == 0 ) { 
+number_to_dial++; 
+return(number_to_dial);
+}
+
+
+
+
+//}

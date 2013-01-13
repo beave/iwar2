@@ -241,13 +241,14 @@ touchwin(stdscr);
 refresh();
 }
 
+
+
 void iWar_Update_Status (const char *nstring,... ) {
 
 char buf[256];
 
 va_list ap;
 va_start(ap, nstring);
-
 vsnprintf(buf, sizeof(buf), nstring, ap);
 
 init_pair(1, COLOR_WHITE, COLOR_BLUE);
