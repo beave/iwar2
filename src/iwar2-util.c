@@ -33,11 +33,13 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <fcntl.h>
+#include <curses.h>
 #include "iwar2.h"
 
 struct _iWarConfig *config;
 struct _iWarVar *var;
 struct _iWarCounters *counters;
+struct _iWar_Screen_Info *screen_info;
 
 uint64_t number_to_dial;
 
@@ -206,6 +208,44 @@ return(number_to_dial);
 }
 
 
+/* DEBUG - screen_info shouldnt be a global */
+
+void iWar_Row_Col_Check( char *dialnum ) { 
+
+	int i=0;
+	int b=0;
+        int maxrow;
+        int maxcol;
+	char tmp[64] = { 0 };
+
+        getmaxyx(stdscr,maxrow,maxcol);  /* Current screen attributes */
+        screen_info->row++;
+
+        snprintf(tmp, sizeof(tmp), "%s", dialnum);
+
+        if ( screen_info->row > maxrow-10)
+                {
+                screen_info->row=10; screen_info->col = screen_info->col + strlen(tmp) + 2;
+                }
+
+        /* If we're outside our range,   wipe the screen.   There's
+           probably a better way to do this */
+
+        if (screen_info->col + strlen(tmp) >= maxcol)
+               {
+//               iWar_Update_Status("Screen full: Clearing...");
+               screen_info->col=2; attron(COLOR_PAIR(10) | A_NORMAL);
+               for (i=10; i < maxrow-9; i++)
+                 {
+                 move(i,0); for (b=0; b < maxcol-1; b++)
+                   {
+                   addch(' ');          /* wipe it away.... */
+                   }
+                 }
+               attroff(COLOR_PAIR(10) | A_NORMAL);
+               }
+
+}
 
 
-//}
+

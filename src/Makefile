@@ -49,8 +49,8 @@ CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am_iwar2_OBJECTS = iwar2.$(OBJEXT) iwar2-strlcpy.$(OBJEXT) \
-	iwar2-strlcat.$(OBJEXT) iwar2-util.$(OBJEXT) \
-	iwar2-ncurses.$(OBJEXT) iwar2-config.$(OBJEXT) \
+	iwar2-strlcat.$(OBJEXT) iwar2-ncurses.$(OBJEXT) \
+	iwar2-util.$(OBJEXT) iwar2-config.$(OBJEXT) \
 	iwar2-threads.$(OBJEXT) iwar2-usage.$(OBJEXT)
 iwar2_OBJECTS = $(am_iwar2_OBJECTS)
 iwar2_LDADD = $(LDADD)
@@ -177,8 +177,8 @@ AM_CFLAGS = -D_POSIX
 iwar2_SOURCES = iwar2.c \
 iwar2-strlcpy.c \
 iwar2-strlcat.c \
-iwar2-util.c \
 iwar2-ncurses.c \
+iwar2-util.c \
 iwar2-config.c  \
 iwar2-threads.c \
 iwar2-usage.c

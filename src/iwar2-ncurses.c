@@ -38,6 +38,7 @@
 
 struct _iWarCounters *counters;
 struct _iWarConfig *config;
+struct _iWar_Screen_Info *screen_info;
 
 void iWar_Initscreen() { 
 
@@ -47,7 +48,7 @@ cbreak();
 timeout(0);                       /* Always process user input,  don't wait */
 start_color();
 clear();
-getmaxyx(stdscr, counters->max_row, counters->max_col);
+getmaxyx(stdscr, screen_info->row, screen_info->col);
 
 }
 
@@ -55,9 +56,9 @@ getmaxyx(stdscr, counters->max_row, counters->max_col);
 void iWar_Testscreen()
 {
 
- getmaxyx(stdscr,counters->max_row, counters->max_col); /* Current screen attributes */
+ getmaxyx(stdscr, screen_info->row, screen_info->col); /* Current screen attributes */
 
- if (counters->max_row < 24 || counters->max_col < 80)
+ if (screen_info->row < 24 || screen_info->col < 80)
     {
     endwin();
     fprintf(stderr, "This program requires a screen size of 80x24\n");
@@ -182,8 +183,8 @@ int i; int b;
 //int maxrow;  int maxcol;
 char msg[50];
 
-getmaxyx(stdscr,counters->max_row, counters->max_col);
-info = newwin(15,50, (counters->max_row - 7) / 2, (counters->max_col - 50) / 2);
+getmaxyx(stdscr,screen_info->row, screen_info->col);
+info = newwin(15,50, (screen_info->row - 7) / 2, (screen_info->col - 50) / 2);
 wattrset(info, COLOR_PAIR(6));
 box(info, ACS_VLINE, ACS_HLINE);
 
@@ -218,9 +219,9 @@ WINDOW *info;
 
 int i; int b;
 int maxrow;  int maxcol;
-getmaxyx(stdscr, counters->max_row, counters->max_col);
+getmaxyx(stdscr, screen_info->row, screen_info->col);
 
-info = newwin(7,50, (counters->max_row - 7) / 2, (counters->max_col - 50) / 2);
+info = newwin(7,50, (screen_info->row - 7) / 2, (screen_info->col - 50) / 2);
 
 if (message_type == 1) { wattrset(info, COLOR_PAIR(3)); }	/* Red */
 if (message_type == 2) { wattrset(info, COLOR_PAIR(4)); }	/* Yellow */
@@ -258,6 +259,30 @@ printw("                                     ");
 move(5,20);
 printw("%s", buf);
 attroff(COLOR_PAIR(1));
+refresh();
+}
+
+/* DEBUG -  screen_info shouldnt be a global */
+
+void iWar_Plot(char *dialnum, int color, int type ) {
+
+if ( type == IWAR_NORMAL) attron( COLOR_PAIR(color) | A_NORMAL );
+if ( type == IWAR_BLINK) attron( COLOR_PAIR(color) | A_BLINK );
+if ( type == IWAR_REVERSE) attron( COLOR_PAIR(color) | A_REVERSE );
+if ( type == IWAR_UNDERLINE) attron( COLOR_PAIR(color) | A_UNDERLINE );
+if ( type == IWAR_STANDOUT) attron( COLOR_PAIR(color) | A_STANDOUT );
+if ( type == IWAR_BOLD) attron( COLOR_PAIR(color) | A_BOLD );
+	
+move(screen_info->row,screen_info->col);
+printw("%s", dialnum);
+
+if ( type == IWAR_NORMAL) attroff( COLOR_PAIR(color) | A_NORMAL );
+if ( type == IWAR_BLINK) attroff( COLOR_PAIR(color) | A_BLINK );
+if ( type == IWAR_REVERSE) attroff( COLOR_PAIR(color) | A_REVERSE );
+if ( type == IWAR_UNDERLINE) attroff( COLOR_PAIR(color) | A_UNDERLINE );
+if ( type == IWAR_STANDOUT) attroff( COLOR_PAIR(color) | A_STANDOUT );
+if ( type == IWAR_BOLD) attron( COLOR_PAIR(color) | A_BOLD );
+
 refresh();
 }
 

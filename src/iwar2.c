@@ -44,6 +44,7 @@ struct _iWarVar *var;
 struct _iWarCounters *counters;
 struct _iWarConfig *config;
 struct _iWarAlertConfig *alertconfig;
+struct _iWar_Screen_Info *screen_info;
 
 pthread_cond_t iWarProcDoWork=PTHREAD_COND_INITIALIZER;
 pthread_mutex_t iWarProcWorkMutex=PTHREAD_MUTEX_INITIALIZER;
@@ -73,6 +74,10 @@ char iwar_buffer[IWAR_FIFO_BUFFER];
 char *ptmp=NULL;
 char *tok=NULL;
 
+char tmp[2];
+char tmp2[64];
+char c;
+
 char dialed_number[30] = { 0 }; 
 char status[30] = { 0 }; 
 char human_message[256] = { 0 };
@@ -84,11 +89,13 @@ memset(config, 0, sizeof(_iWarConfig));
 counters = malloc(sizeof(_iWarCounters));
 memset(counters, 0, sizeof(_iWarCounters));
 
+screen_info = malloc(sizeof(_iWar_Screen_Info));
+memset(counters, 0, sizeof(_iWarCounters));
 
-char tmp[2];
-char tmp2[64];
+/* Default startup screen settings */
 
-char c; 
+screen_info->row = 10;
+screen_info->col = 2; 
 
 WINDOW *terminalwin;
 
@@ -150,7 +157,7 @@ iWar_Initscreen();
 iWar_Mainscreen();
 //iWar_Intro();
 
-terminalwin = newwin(6, counters->max_col-5, counters->max_row-7,2);
+terminalwin = newwin(6, screen_info->col-5, screen_info->row-7,2);
 scrollok(terminalwin, TRUE);
 wrefresh(terminalwin);
 
@@ -202,8 +209,18 @@ while(1) {
 		   strlcpy(human_message, iWar_Remove_Return(ptmp), sizeof(human_message)); 
 
 		if (!strcmp(status, "DIALING")) iWar_Update_Status("Calling %s....", dialed_number);
-		if (!strcmp(status, "BUSY")) iWar_Update_Status("%s is busy.", dialed_number); 
-		if (!strcmp(status, "NO CARRIER")) iWar_Update_Status("Nothing was found at %s", dialed_number);
+		
+		if (!strcmp(status, "BUSY")) {
+		   iWar_Update_Status("%s is busy.", dialed_number); 
+		   iWar_Row_Col_Check(dialed_number);
+                   iWar_Plot(dialed_number, BUSY, IWAR_BOLD);
+                   }
+
+		if (!strcmp(status, "NO CARRIER")) { 
+		   iWar_Update_Status("Nothing was found at %s", dialed_number);
+		   iWar_Row_Col_Check(dialed_number);
+		   iWar_Plot(dialed_number, NO_CARRIER, IWAR_NORMAL);
+		   }		
 
 		if (!strcmp(status, "CONNECT")) { 
 		   iWar_Update_Status("CONNECTED at %s!", dialed_number);

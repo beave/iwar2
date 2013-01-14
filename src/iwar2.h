@@ -57,9 +57,6 @@ struct _iWarCounters {
 	int serial_count;
 	int alert_config_count;
 
-	int max_row; 
-	int max_col;
-
 };
 
 typedef struct _iWarS _iWarS;
@@ -71,6 +68,13 @@ typedef struct _iWar_Dialer_Number _iWar_Dialer_Number;
 struct _iWar_Dialer_Number {
         char number[64];
 };
+
+typedef struct _iWar_Screen_Info _iWar_Screen_Info;
+struct _iWar_Screen_Info {
+	int row; 
+	int col;
+};
+
 
 
 void  iWar_Mainscreen( void );
@@ -90,5 +94,7 @@ void  iWar_Master ( void );
 uint64_t iWar_Get_Next_Number( sbool );
 void iWar_Send_FIFO(char *, const char *,...);
 void iWar_Log(int, const char *,...); 
+void iWar_Plot(char *, int, int);
+void iWar_Row_Col_Check(char *);
 
 
