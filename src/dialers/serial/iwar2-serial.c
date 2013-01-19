@@ -190,6 +190,8 @@ while( modem_timer < serialconfig->modem_timeout + 5) {
 	   //printf("%s\n", modem_in);
 	   
 	   if ( (int)buf[0] == 13 || (int)buf[0] == 10 ) strlcpy(modem_in, "", sizeof(modem_in));
+	 	
+//	   printf("-> %s\n", modem_in);
 
 	   /*CONNECT FLAG */
 	   if (strstr(modem_in, "NO DIALTONE")  || strstr(modem_in, "NO DIAL TONE")) { 
@@ -210,7 +212,12 @@ while( modem_timer < serialconfig->modem_timeout + 5) {
 	      }
 
            if (!strcmp(modem_in, "CONNECT") && connect_flag == 0) {
-              iWar_Send_FIFO(serialconfig->fifo, "%s|CONNECT|Connected at %s\n", serialconfig->dial);
+              iWar_Send_FIFO(serialconfig->fifo, "%s|CONNECT|Connected at %s!\n", serialconfig->dial, serialconfig->dial);
+
+	      /* If where not doing banner checks,  and dtr hang up */
+	      
+	      connect_flag = 1; 
+	      m_dtrtoggle(serialconfig->portfd,3);		/* or +++ */
               exit(0);
               }
 
