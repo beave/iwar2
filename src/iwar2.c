@@ -248,10 +248,15 @@ while(1) {
 		   }		
 
 		if (!strcmp(status, "CONNECT")) { 
+		   counters->connect++;
+		   counters->numbers_left--;
 		   iWar_Update_Status("CONNECTED at %s!", dialed_number);
-		   // set connect flag 
+		   iWar_Row_Col_Check(dialed_number);
+		   iWar_Plot(dialed_number, CONNECT, IWAR_BLINK);
+		   iWar_Update_Right(CONNECT, counters->connect);
+                   iWar_Update_Right(TOTAL_LEFT, counters->numbers_left);
 		   }
-
+		   
 		   /* Search for result from dialer that we're interested in */
 
 		   for (i=0; i<counters->alert_config_count; i++) { 

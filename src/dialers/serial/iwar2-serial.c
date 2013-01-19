@@ -209,6 +209,11 @@ while( modem_timer < serialconfig->modem_timeout + 5) {
 	      exit(0);
 	      }
 
+           if (!strcmp(modem_in, "CONNECT") && connect_flag == 0) {
+              iWar_Send_FIFO(serialconfig->fifo, "%s|CONNECT|Connected at %s\n", serialconfig->dial);
+              exit(0);
+              }
+
 	   modem_timer=0;
 	}
 
