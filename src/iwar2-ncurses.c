@@ -143,7 +143,7 @@ void iWar_Mainscreen()
 
         move(1,0); addch(ACS_VLINE); printw(" Dialer Command  :");
         move(2,0); addch(ACS_VLINE); printw(" Start/End Scan  :");
-        move(3,0); addch(ACS_VLINE); printw(" Pre/Post Dial   :");
+        move(3,0); addch(ACS_VLINE); printw(" Pre/Post Dial   : %s %s", config->iwar_predial, config->iwar_postdial);
         move(4,0); addch(ACS_VLINE); printw(" Log File        :");
         move(5,0); addch(ACS_VLINE); printw(" Status          :");
         move(6,0); addch(ACS_VLINE); //printw(" Idle            :");	/* Multi-threaded,  no longer a single timera /*
@@ -281,8 +281,32 @@ if ( type == IWAR_BLINK) attroff( COLOR_PAIR(color) | A_BLINK );
 if ( type == IWAR_REVERSE) attroff( COLOR_PAIR(color) | A_REVERSE );
 if ( type == IWAR_UNDERLINE) attroff( COLOR_PAIR(color) | A_UNDERLINE );
 if ( type == IWAR_STANDOUT) attroff( COLOR_PAIR(color) | A_STANDOUT );
-if ( type == IWAR_BOLD) attron( COLOR_PAIR(color) | A_BOLD );
+if ( type == IWAR_BOLD) attroff( COLOR_PAIR(color) | A_BOLD );
 
 refresh();
 }
+
+void iWar_Update_Right(int type, int value) { 
+
+int right_row=0; 
+int row, col;
+
+getmaxyx(stdscr, row, col);
+
+if ( type == CONNECT ) right_row = 1; 
+if ( type == NO_CARRIER ) right_row = 2;
+if ( type == BUSY ) right_row = 3;
+if ( type == VOICE ) right_row = 4; 
+if ( type == TONE ) right_row = 5;
+if ( type == TIMEOUT ) right_row = 6;
+if ( type == TOTAL_LEFT ) right_row = 7;
+
+attron( COLOR_PAIR(1) | A_NORMAL ); 
+move(right_row, col - 8); 
+printw("%d ", value); 
+attroff( COLOR_PAIR(1) | A_NORMAL );
+refresh();
+
+}
+
 

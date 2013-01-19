@@ -127,6 +127,11 @@ while ((c = getopt_long(argc, argv, short_options, long_options, &option_index))
 	   case 'p':
 	   snprintf(config->iwar_predial, sizeof(config->iwar_predial), "%s", iWar_Remove_Return(optarg));
 	   break;
+
+           case 'P':
+           snprintf(config->iwar_postdial, sizeof(config->iwar_postdial), "%s", iWar_Remove_Return(optarg));
+           break;
+
 	    
 	    }
 }
@@ -135,6 +140,8 @@ if (config->iwar_start == 0) iWar_Log(1, "No MASK speicifed! [start]");
 if (config->iwar_end == 0) iWar_Log(1, "No MASK speicifed! [end]");
 if (config->iwar_start == config->iwar_end) iWar_Log(1, "Nothing to dial!");
 
+
+counters->numbers_left = config->iwar_end - config->iwar_start + 1; 
 
 printf("  %" PRIu64 " - %" PRIu64 "\n", config->iwar_start, config->iwar_end);
 sleep(1);
@@ -155,6 +162,16 @@ pthread_t master_thread_id;
 
 iWar_Initscreen();
 iWar_Mainscreen();
+
+/* Set right hand side counters to zero */
+iWar_Update_Right(CONNECT, 0);
+iWar_Update_Right(NO_CARRIER, 0);
+iWar_Update_Right(BUSY, 0);
+iWar_Update_Right(TONE, 0);
+iWar_Update_Right(TIMEOUT, 0);
+iWar_Update_Right(VOICE, 0);
+iWar_Update_Right(TOTAL_LEFT, counters->numbers_left);
+
 //iWar_Intro();
 
 terminalwin = newwin(6, screen_info->col-5, screen_info->row-7,2);
@@ -208,18 +225,26 @@ while(1) {
 		   ptmp = strtok_r(NULL, "|", &tok);
 		   strlcpy(human_message, iWar_Remove_Return(ptmp), sizeof(human_message)); 
 
-		if (!strcmp(status, "DIALING")) iWar_Update_Status("Calling %s....", dialed_number);
+		if (!strcmp(status, "ATDT")) iWar_Update_Status("Calling %s....", dialed_number);
 		
 		if (!strcmp(status, "BUSY")) {
+		   counters->busy++; 
+		   counters->numbers_left--; 
 		   iWar_Update_Status("%s is busy.", dialed_number); 
 		   iWar_Row_Col_Check(dialed_number);
                    iWar_Plot(dialed_number, BUSY, IWAR_BOLD);
+		   iWar_Update_Right(BUSY, counters->busy);
+		   iWar_Update_Right(TOTAL_LEFT, counters->numbers_left);
                    }
 
 		if (!strcmp(status, "NO CARRIER")) { 
+		   counters->no_carrier++; 
+		   counters->numbers_left--;
 		   iWar_Update_Status("Nothing was found at %s", dialed_number);
 		   iWar_Row_Col_Check(dialed_number);
 		   iWar_Plot(dialed_number, NO_CARRIER, IWAR_NORMAL);
+		   iWar_Update_Right(BUSY, counters->no_carrier);
+                   iWar_Update_Right(TOTAL_LEFT, counters->numbers_left);
 		   }		
 
 		if (!strcmp(status, "CONNECT")) { 

@@ -16,4 +16,8 @@
 #define CONNECT		11
 #define	BUSY		12
 #define VOICE		13
+#define TONE		14
+#define TIMEOUT		15
+
+#define TOTAL_LEFT	99
 

@@ -169,7 +169,7 @@ m_hupcl(serialconfig->portfd, 1);
 m_flush(serialconfig->portfd);        /* Flush any old data out before we start */
 
 snprintf(tmpdial, sizeof(tmpdial), "ATDT%s\r", serialconfig->dial);
-iWar_Send_FIFO(serialconfig->fifo, "%s|DIALING|Calling %s....\n", serialconfig->dial, serialconfig->dial);
+iWar_Send_FIFO(serialconfig->fifo, "%s|ATDT|Calling %s....\n", serialconfig->dial, serialconfig->dial);
 
 iWar_Send_Modem(serialconfig->portfd, tmpdial);
 

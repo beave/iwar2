@@ -28,6 +28,8 @@ struct _iWarConfig {
     char	 iwar_fifo[MAX_PATH];
 
     char	 iwar_predial[128];
+    char 	 iwar_postdial[128];
+
     char	 iwar_mask[30];
     uint64_t	 iwar_start;
     uint64_t	 iwar_end;
@@ -56,6 +58,15 @@ struct _iWarCounters {
 
 	int serial_count;
 	int alert_config_count;
+	
+	int numbers_left;
+
+	int connect; 
+	int no_carrier;
+	int busy;
+	int voice;
+	int tone;
+	int timeout; 
 
 };
 
@@ -96,5 +107,7 @@ void iWar_Send_FIFO(char *, const char *,...);
 void iWar_Log(int, const char *,...); 
 void iWar_Plot(char *, int, int);
 void iWar_Row_Col_Check(char *);
+void iWar_Update_Right(int, int);
+
 
 
