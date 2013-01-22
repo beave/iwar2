@@ -92,6 +92,11 @@ memset(counters, 0, sizeof(_iWarCounters));
 screen_info = malloc(sizeof(_iWar_Screen_Info));
 memset(counters, 0, sizeof(_iWarCounters));
 
+struct _iWar_Master_Thread_Data *master_thread_data;
+master_thread_data = malloc(sizeof(_iWar_Master_Thread_Data));
+memset(master_thread_data, 0, sizeof(_iWar_Master_Thread_Data));
+
+
 /* Default startup screen settings */
 
 screen_info->row = 10;
@@ -188,7 +193,8 @@ if ( config->serial_flag ) {
 
 pthread_t dialer_thread_id[counters->serial_count];
 for (i = 0; i < counters->serial_count; i++) {
-     rc = pthread_create ( &dialer_thread_id[i], &dialer_thread_attr, (void *)iWar_Mother_Forker, NULL );
+     master_thread_data->thread_num = i;
+     rc = pthread_create ( &dialer_thread_id[i], &dialer_thread_attr, (void *)iWar_Mother_Forker, master_thread_data );
      if ( rc != 0 ) iWar_Log(1, "Could not pthread_create() dialer threads [Error code: %d]", rc);
      }
 }

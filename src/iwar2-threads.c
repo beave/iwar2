@@ -54,23 +54,29 @@ uint64_t number_to_dial=0;
 int iwar_msgslot=0;
 //char number[64]; 
 
-void iWar_Mother_Forker ( void ) {
+void iWar_Mother_Forker ( void *arg ) {
 
 int rc;
+int thread_num=0;
 
 char tmp_command[512];
 char tmp_fifo[512];
+
+struct _iWar_Master_Thread_Data *master_thread_data = (struct _iWar_Master_Thread_Data *) arg;
+
+thread_num = master_thread_data->thread_num;
 
 for (;;) {
 
         pthread_mutex_lock(&iWarProcWorkMutex);
 	while ( iwar_msgslot == 0 ) pthread_cond_wait(&iWarProcDoWork, &iWarProcWorkMutex);	
 	pthread_cond_wait(&iWarProcDoWork, &iWarProcWorkMutex);
+        iwar_msgslot--;
+        pthread_mutex_unlock(&iWarProcWorkMutex);
 
-
-	snprintf(tmp_command, sizeof(tmp_command), "%s --dial %" PRIu64 "", serial->command, number_to_dial);
+	snprintf(tmp_command, sizeof(tmp_command), "%s --dial %" PRIu64 "", serial[thread_num].command, number_to_dial);
 //	snprintf(tmp_fifo, sizeof(tmp_fifo), "-|DIALING|%s\n", tmp_command); 
-//	iWar_Send_FIFO(config->iwar_fifo, tmp_fifo);
+	iWar_Send_FIFO(config->iwar_fifo, "DEBUG|DEBUG|%d\n", thread_num);
 //	pthread_cond_wait(&iWarProcDoWork, &iWarProcWorkMutex);
 //	printf("got work %s\n", WarDialerNumber[iwar_msgslot].number);
 //	printf("\nGOT WORK\n");
@@ -78,8 +84,8 @@ for (;;) {
 	rc = system(tmp_command);
 
 //	iWar_Send_FIFO(config->iwar_fifo, "-|-|DONE\n");
-	iwar_msgslot--;
-	pthread_mutex_unlock(&iWarProcWorkMutex);
+//	iwar_msgslot--;
+//	pthread_mutex_unlock(&iWarProcWorkMutex);
 }
 } /* End of iWar_Mother_Forker */
 
