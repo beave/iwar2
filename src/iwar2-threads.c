@@ -75,18 +75,9 @@ for (;;) {
         pthread_mutex_unlock(&iWarProcWorkMutex);
 
 	snprintf(tmp_command, sizeof(tmp_command), "%s --dial %" PRIu64 "", serial[thread_num].command, number_to_dial);
-//	snprintf(tmp_fifo, sizeof(tmp_fifo), "-|DIALING|%s\n", tmp_command); 
 	iWar_Send_FIFO(config->iwar_fifo, "DEBUG|DEBUG|%d\n", thread_num);
-//	pthread_cond_wait(&iWarProcDoWork, &iWarProcWorkMutex);
-//	printf("got work %s\n", WarDialerNumber[iwar_msgslot].number);
-//	printf("\nGOT WORK\n");
-//	rc = execl(serial->command, serial->command, NULL, (char *)NULL);
 	rc = system(tmp_command);
-
-//	iWar_Send_FIFO(config->iwar_fifo, "-|-|DONE\n");
-//	iwar_msgslot--;
-//	pthread_mutex_unlock(&iWarProcWorkMutex);
-}
+        }
 } /* End of iWar_Mother_Forker */
 
 void iWar_Master ( void ) { 
