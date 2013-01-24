@@ -103,7 +103,7 @@ void  iWar_Load_Config( void );
 char *iWar_Between_Quotes(char *);
 char *iWar_Replace_Str(char *, char *, char *);
 char *iWar_Var_To_Value(char *);
-void  iWar_Mother_Forker ( void * ); 
+void  iWar_Mother_Forker ( void ); 
 void  iWar_Update_Status (const char *,... );
 void  iWar_Master ( void );
 uint64_t iWar_Get_Next_Number( sbool );

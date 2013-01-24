@@ -49,6 +49,7 @@ struct _iWar_Screen_Info *screen_info;
 pthread_cond_t iWarProcDoWork=PTHREAD_COND_INITIALIZER;
 pthread_mutex_t iWarProcWorkMutex=PTHREAD_MUTEX_INITIALIZER;
 
+
 int main(int argc, char **argv) {
 
 int fd=0;
@@ -69,7 +70,7 @@ int option_index = 0;
 int i=0;
 int rc=0;
 
-char iwar_buffer[IWAR_FIFO_BUFFER];
+char iwar_buffer[IWAR_FIFO_BUFFER] = { 0 }; ;
 
 char *ptmp=NULL;
 char *tok=NULL;
@@ -155,13 +156,13 @@ iWar_Load_Config();
 
 pthread_attr_t dialer_thread_attr;
 pthread_attr_init(&dialer_thread_attr);
-pthread_attr_setdetachstate(&dialer_thread_attr,  PTHREAD_CREATE_DETACHED);
+//pthread_attr_setdetachstate(&dialer_thread_attr,  PTHREAD_CREATE_DETACHED);
 
 /* Master thread that feeds numbers to children */
 
 pthread_attr_t master_thread_attr;
 pthread_attr_init(&master_thread_attr);
-pthread_attr_setdetachstate(&master_thread_attr,  PTHREAD_CREATE_DETACHED);
+//pthread_attr_setdetachstate(&master_thread_attr,  PTHREAD_CREATE_DETACHED);
 
 pthread_t master_thread_id;
 
@@ -189,19 +190,16 @@ if ( rc != 0 ) iWar_Log(1, "Could not pthread_create() master thread [Error code
 
 if ( config->serial_flag ) {
 
-//iWar_Display_Info("Spinning serial up threads", 1, 2);
-
 pthread_t dialer_thread_id[counters->serial_count];
-for (i = 0; i < counters->serial_count; i++) {
-     master_thread_data->thread_num = i;
-     rc = pthread_create ( &dialer_thread_id[i], &dialer_thread_attr, (void *)iWar_Mother_Forker, master_thread_data );
+
+for (i = 0;  i < counters->serial_count; i++) {
+     rc = pthread_create ( &dialer_thread_id[i], &dialer_thread_attr, (void *)iWar_Mother_Forker, NULL );
      if ( rc != 0 ) iWar_Log(1, "Could not pthread_create() dialer threads [Error code: %d]", rc);
      }
 }
 
 //iWar_Display_Info("Open FIFO/Waiting on communications", 1, 2);
 fd = open(config->iwar_fifo, O_RDONLY);
-
 if(fd < 0) iWar_Display_Info("Error opening FIFO!", 1, 1); 
 
 /* Start thread that'll feed the other threads here (See the iwar-fifo) */

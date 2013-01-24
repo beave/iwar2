@@ -52,19 +52,24 @@ pthread_mutex_t iWarProcWorkMutex;
 
 uint64_t number_to_dial=0;
 int iwar_msgslot=0;
+int thread_num;
+
 //char number[64]; 
 
-void iWar_Mother_Forker ( void *arg ) {
+void iWar_Mother_Forker ( void ) {
 
 int rc;
-int thread_num=0;
+int int_thread_num;
+
+pthread_mutex_lock(&iWarProcWorkMutex);
+int_thread_num = thread_num;
+thread_num++; 
+pthread_mutex_unlock(&iWarProcWorkMutex);
+
+iWar_Send_FIFO(config->iwar_fifo, "DEBUG|DEBUG|%d %u\n", int_thread_num, pthread_self() );
 
 char tmp_command[512];
 char tmp_fifo[512];
-
-struct _iWar_Master_Thread_Data *master_thread_data = (struct _iWar_Master_Thread_Data *) arg;
-
-thread_num = master_thread_data->thread_num;
 
 for (;;) {
 
@@ -74,8 +79,7 @@ for (;;) {
         iwar_msgslot--;
         pthread_mutex_unlock(&iWarProcWorkMutex);
 
-	snprintf(tmp_command, sizeof(tmp_command), "%s --dial %" PRIu64 "", serial[thread_num].command, number_to_dial);
-	iWar_Send_FIFO(config->iwar_fifo, "DEBUG|DEBUG|%d\n", thread_num);
+	snprintf(tmp_command, sizeof(tmp_command), "%s --dial %" PRIu64 "", serial[int_thread_num].command, number_to_dial);
 	rc = system(tmp_command);
         }
 } /* End of iWar_Mother_Forker */
