@@ -41,6 +41,8 @@ struct _iWarVar *var;
 struct _iWarCounters *counters;
 struct _iWar_Screen_Info *screen_info;
 
+pthread_mutex_t iWarProcWorkMutex;
+
 uint64_t number_to_dial;
 
 
@@ -202,9 +204,15 @@ uint64_t iWar_Get_Next_Number( sbool dialtype ) {
 
 /* Sequential */
 
-//if ( dialtype == 0 ) { 
+if ( dialtype == 0 ) { 
+pthread_mutex_lock(&iWarProcWorkMutex);
 number_to_dial++; 
+pthread_mutex_unlock(&iWarProcWorkMutex);
+}
+
 return(number_to_dial);
+
+
 }
 
 

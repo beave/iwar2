@@ -166,7 +166,7 @@ void iWar_Mainscreen()
         move(5, maxcol-23);
         printw("TONE/SILENCE :");
         move(6, maxcol-23);
-        printw("TIMEOUT/SKIP :");
+        printw("TIMEOUT      :");
         move(7,maxcol-23);
         printw("Numbers Left : ");
 

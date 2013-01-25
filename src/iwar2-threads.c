@@ -66,8 +66,6 @@ int_thread_num = thread_num;
 thread_num++; 
 pthread_mutex_unlock(&iWarProcWorkMutex);
 
-iWar_Send_FIFO(config->iwar_fifo, "DEBUG|DEBUG|%d %u\n", int_thread_num, pthread_self() );
-
 char tmp_command[512];
 char tmp_fifo[512];
 
@@ -98,18 +96,15 @@ for (;;) {
 	
 	if ( iwar_msgslot <= counters->serial_count )  { 
 
-//	  snprintf(tmp, sizeof(tmp), "Counters: %d| msgslot: %d|Idle\n", counters->serial_count, iwar_msgslot);
-//	  iWar_Send_FIFO(config->iwar_fifo, tmp);
           sleep(1); 
+ 	   iWar_Send_FIFO(config->iwar_fifo, "DEBUG|DEBUG|HERE\n");
 
 	   } else { 
 	   
-//	   iWar_Send_FIFO(config->iwar_fifo, "-|-|Got work!\n");
-           
-	   pthread_mutex_lock(&iWarProcWorkMutex);
+	   iWar_Get_Next_Number(0);
+	   iWar_Send_FIFO(config->iwar_fifo, "DEBUG|DEBUG| %" PRIu64 "\n", number_to_dial);
 
-	   number_to_dial = iWar_Get_Next_Number(0); 
-	   
+	   pthread_mutex_lock(&iWarProcWorkMutex);
 	   snprintf(iWarDialerNumber[iwar_msgslot].number, sizeof(iWarDialerNumber[iwar_msgslot].number), "%" PRIu64 "", number_to_dial);
 	   iwar_msgslot++; 
 	   pthread_cond_signal(&iWarProcDoWork);

@@ -247,7 +247,7 @@ while(1) {
 		   iWar_Update_Status("Nothing was found at %s", dialed_number);
 		   iWar_Row_Col_Check(dialed_number);
 		   iWar_Plot(dialed_number, NO_CARRIER, IWAR_NORMAL);
-		   iWar_Update_Right(BUSY, counters->no_carrier);
+		   iWar_Update_Right(NO_CARRIER, counters->no_carrier);
                    iWar_Update_Right(TOTAL_LEFT, counters->numbers_left);
 		   }		
 
